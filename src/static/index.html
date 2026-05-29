@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Explorador Urbano</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <style>
+    :root{
+      --bg:#0f172a;
+      --bg2:#111827;
+      --card:#ffffff;
+      --muted:#64748b;
+      --text:#0f172a;
+      --line:#e5e7eb;
+      --primary:#2563eb;
+      --success:#16a34a;
+      --danger:#dc2626;
+      --warning:#d97706;
+      --soft:#f8fafc;
+      --shadow:0 14px 40px rgba(15,23,42,.12);
+      --radius:20px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,"Helvetica Neue",Arial,sans-serif;
+      background:linear-gradient(180deg,#eef2ff 0%,#f8fafc 45%,#eef2f7 100%);
+      color:var(--text);
+    }
+    button,input{font:inherit}
+    .hidden{display:none !important}
+
+    /* Auth */
+    #auth-screen{
+      min-height:100vh;
+      display:grid;
+      place-items:center;
+      padding:24px;
+      background:
+        radial-gradient(circle at top left, rgba(37,99,235,.16), transparent 35%),
+        radial-gradient(circle at bottom right, rgba(22,163,74,.12), transparent 32%),
+        linear-gradient(180deg,#f8fbff 0%,#eef2ff 100%);
+    }
+    .auth-card{
+      width:min(520px,100%);
+      background:rgba(255,255,255,.88);
+      backdrop-filter:blur(14px);
+      border:1px solid rgba(255,255,255,.7);
+      box-shadow:var(--shadow);
+      border-radius:28px;
+      padding:28px;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      margin-bottom:20px;
+    }
+    .brand-badge{
+      width:52px;height:52px;border-radius:16px;
+      display:grid;place-items:center;
+      background:linear-gradient(135deg,#2563eb,#7c3aed);
+      color:#fff;font-size:24px;
+      box-shadow:0 10px 24px rgba(37,99,235,.25);
+      flex:0 0 auto;
+    }
+    .brand h1{margin:0;font-size:24px;line-height:1.1}
+    .brand p{margin:4px 0 0;color:var(--muted);font-size:14px}
+    .auth-grid{display:grid;gap:12px;margin-top:18px}
+    .field label{
+      display:block;font-size:13px;font-weight:700;
+      margin:0 0 6px;color:#1f2937;
+    }
+    .field input{
+      width:100%;
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius:14px;
+      padding:13px 14px;
+      outline:none;
+      transition:.15s border-color,.15s box-shadow;
+    }
+    .field input:focus{
+      border-color:#93c5fd;
+      box-shadow:0 0 0 4px rgba(59,130,246,.12);
+    }
+    .auth-actions{
+      display:flex;gap:10px;flex-wrap:wrap;margin-top:8px
+    }
+    .btn{
+      border:none;border-radius:14px;
+      padding:12px 16px;
+      cursor:pointer;font-weight:800;
+      transition:transform .08s ease,opacity .15s ease,background .15s ease;
+    }
+    .btn:hover{transform:translateY(-1px)}
+    .btn:active{transform:translateY(0)}
+    .btn-primary{background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff}
+    .btn-ghost{background:#eef2ff;color:#1d4ed8}
+    .btn-danger{background:#fee2e2;color:#b91c1c}
+    .auth-note{
+      margin-top:14px;
+      font-size:13px;
+      color:var(--muted);
+      line-height:1.5;
+    }
+    .auth-msg{
+      margin-top:14px;
+      padding:12px 14px;
+      border-radius:14px;
+      background:#f8fafc;
+      border:1px solid var(--line);
+      color:#334155;
+      font-size:13px;
+      min-height:46px;
+    }
+
+    /* App */
+    #app{
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+    }
+    .topbar{
+      position:sticky;top:0;z-index:20;
+      background:rgba(15,23,42,.92);
+      color:#fff;
+      backdrop-filter:blur(10px);
+      border-bottom:1px solid rgba(255,255,255,.08);
+      box-shadow:0 8px 28px rgba(15,23,42,.14);
+    }
+    .topbar-inner{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      padding:14px 18px;
+      flex-wrap:wrap;
+    }
+    .title-wrap{display:flex;align-items:center;gap:12px;min-width:0}
+    .title-icon{
+      width:42px;height:42px;border-radius:14px;
+      display:grid;place-items:center;
+      background:linear-gradient(135deg,#38bdf8,#2563eb);
+      box-shadow:0 10px 24px rgba(37,99,235,.25);
+      font-size:20px;
+      flex:0 0 auto;
+    }
+    .title-copy h2{margin:0;font-size:18px}
+    .title-copy .sub{font-size:12px;color:#cbd5e1;margin-top:2px}
+    .user-chip{
+      display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+      margin-left:auto;
+    }
+    .pill{
+      padding:7px 10px;border-radius:999px;
+      background:rgba(255,255,255,.08);
+      color:#e2e8f0;
+      font-size:12px;
+    }
+    .nav{
+      display:flex;
+      gap:8px;
+      padding:0 18px 14px;
+      flex-wrap:wrap;
+    }
+    .tab-btn{
+      border:none;
+      border-radius:999px;
+      padding:10px 16px;
+      background:rgba(255,255,255,.08);
+      color:#e2e8f0;
+      cursor:pointer;
+      font-weight:800;
+      transition:.15s;
+    }
+    .tab-btn.active{
+      background:#fff;
+      color:#0f172a;
+      box-shadow:0 8px 20px rgba(0,0,0,.12);
+    }
+
+    .content{
+      width:min(1400px,100%);
+      margin:0 auto;
+      padding:18px;
+      flex:1;
+    }
+    .tab-panel{display:none;animation:fade .15s ease}
+    .tab-panel.active{display:block}
+    @keyframes fade{from{opacity:.4;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+    .grid-2{
+      display:grid;
+      grid-template-columns: 1.35fr .85fr;
+      gap:18px;
+    }
+    @media (max-width: 980px){
+      .grid-2{grid-template-columns:1fr}
+    }
+
+    .card{
+      background:rgba(255,255,255,.92);
+      border:1px solid rgba(226,232,240,.9);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .card-head{
+      padding:16px 18px;
+      border-bottom:1px solid var(--line);
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:flex-start;
+      flex-wrap:wrap;
+    }
+    .card-head h3{
+      margin:0;
+      font-size:16px;
+    }
+    .card-head .desc{
+      margin-top:4px;
+      color:var(--muted);
+      font-size:13px;
+    }
+    .card-body{padding:16px 18px}
+
+    .session-actions{
+      display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px
+    }
+    .btn-green{background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff}
+    .btn-red{background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff}
+    .btn-blue{background:linear-gradient(135deg,#38bdf8,#2563eb);color:#fff}
+    .status-pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 12px;
+      border-radius:999px;
+      background:#eef2ff;
+      color:#1d4ed8;
+      font-size:12px;
+      font-weight:800;
+    }
+    .status-dot{
+      width:9px;height:9px;border-radius:50%;
+      background:var(--success);
+      box-shadow:0 0 0 4px rgba(22,163,74,.12);
+    }
+    .stats-row{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:12px;
+      margin-top:12px;
+    }
+    @media (max-width:720px){
+      .stats-row{grid-template-columns:repeat(2,minmax(0,1fr))}
+    }
+    .mini{
+      background:linear-gradient(180deg,#fff,#f8fafc);
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:14px;
+    }
+    .mini .label{font-size:12px;color:var(--muted);font-weight:700}
+    .mini .value{font-size:22px;font-weight:900;margin-top:4px}
+    .mini .small{font-size:12px;color:#475569;margin-top:3px}
+
+    #map{
+      height:72vh;
+      min-height:520px;
+      border-radius:22px;
+      overflow:hidden;
+      border:1px solid rgba(226,232,240,.9);
+      box-shadow:var(--shadow);
+    }
+    .map-legend{
+      display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;color:#475569;font-size:12px
+    }
+    .legend-chip{
+      display:inline-flex;align-items:center;gap:8px;
+      background:#fff;border:1px solid var(--line);
+      border-radius:999px;padding:8px 12px;
+    }
+    .legend-dot{width:10px;height:10px;border-radius:50%}
+
+    .section-grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:18px;
+    }
+    @media (max-width: 980px){
+      .section-grid{grid-template-columns:1fr}
+    }
+
+    .list{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .item{
+      padding:14px;
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius:16px;
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:flex-start;
+    }
+    .item strong{display:block;font-size:14px}
+    .item .meta{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.5}
+    .item .right{
+      text-align:right;
+      font-size:12px;
+      color:#334155;
+      white-space:nowrap;
+    }
+    .rank-row{
+      display:grid;
+      grid-template-columns: 58px 1fr auto;
+      gap:12px;
+      align-items:center;
+    }
+    .medal{
+      width:46px;height:46px;border-radius:16px;
+      display:grid;place-items:center;
+      font-size:24px;
+      background:#fff7ed;
+      border:1px solid #fed7aa;
+      flex:0 0 auto;
+    }
+    .rank-badge{
+      display:inline-flex;align-items:center;gap:6px;
+      padding:6px 10px;border-radius:999px;
+      background:#eff6ff;color:#1d4ed8;
+      font-size:12px;font-weight:800;
+    }
+    .rank-num{
+      width:36px;height:36px;border-radius:12px;
+      display:grid;place-items:center;
+      background:#eef2ff;color:#1d4ed8;font-weight:900;
+    }
+    .status-ok{color:var(--success);font-weight:800}
+    .status-off{color:var(--warning);font-weight:800}
+    .status-stop{color:var(--muted);font-weight:800}
+    canvas{max-width:100%}
+
+    .empty{
+      padding:20px;
+      border:1px dashed #cbd5e1;
+      border-radius:18px;
+      color:var(--muted);
+      background:#f8fafc;
+      text-align:center;
+    }
+  </style>
+</head>
+<body>
+  <div id="auth-screen">
+    <div class="auth-card">
+      <div class="brand">
+        <div class="brand-badge">🗺️</div>
+        <div>
+          <h1>Explorador Urbano</h1>
+          <p>Login antes do app, histórico, ranking e ao vivo.</p>
+        </div>
+      </div>
+
+      <div class="auth-grid">
+        <div class="field">
+          <label for="nickname">Apelido</label>
+          <input id="nickname" type="text" placeholder="ex.: diogo" autocomplete="username" />
+        </div>
+        <div class="field">
+          <label for="name">Nome</label>
+          <input id="name" type="text" placeholder="para cadastro novo" autocomplete="name" />
+        </div>
+        <div class="auth-actions">
+          <button class="btn btn-primary" id="btn-login">Entrar</button>
+          <button class="btn btn-ghost" id="btn-register">Criar conta</button>
+        </div>
+      </div>
+
+      <div class="auth-note">
+        Use o apelido para entrar. Se o usuário não existir, crie uma conta.
+      </div>
+      <div class="auth-msg" id="auth-msg">Pronto para login.</div>
+    </div>
+  </div>
+
+  <div id="app" class="hidden">
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="title-wrap">
+          <div class="title-icon">🧭</div>
+          <div class="title-copy">
+            <h2>Explorador Urbano</h2>
+            <div class="sub">Mapa · Meu Histórico · Ranking · Ao Vivo</div>
+          </div>
+        </div>
+        <div class="user-chip">
+          <span class="pill" id="user-pill">Usuário</span>
+          <button class="btn btn-danger" id="btn-logout">Sair</button>
+        </div>
+      </div>
+      <nav class="nav">
+        <button class="tab-btn active" data-tab="tab-mapa">Mapa</button>
+        <button class="tab-btn" data-tab="tab-historico">Meu Histórico</button>
+        <button class="tab-btn" data-tab="tab-ranking">Ranking</button>
+        <button class="tab-btn" data-tab="tab-ao-vivo">Ao Vivo</button>
+      </nav>
+    </header>
+
+    <main class="content">
+      <!-- Mapa -->
+      <section id="tab-mapa" class="tab-panel active">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <h3>Mapa</h3>
+                <div class="desc">Inicie uma sessão e o trajeto aparece em tempo real.</div>
+              </div>
+              <div class="status-pill"><span class="status-dot" id="mode-dot"></span><span id="mode-badge">modo: GPS</span></div>
+            </div>
+            <div class="card-body">
+              <div class="session-actions">
+                <button class="btn btn-green" id="btn-start">▶ Iniciar</button>
+                <button class="btn btn-red hidden" id="btn-stop">⏹ Parar</button>
+                <span class="pill" id="session-pill">Sessão: nenhuma</span>
+                <span class="pill" id="stats-pill">⏱ 0:00 · 📍 0m · 0 pts</span>
+              </div>
+              <div id="map"></div>
+              <div class="map-legend">
+                <span class="legend-chip"><span class="legend-dot" style="background:#ef4444"></span> Sessão atual</span>
+                <span class="legend-chip"><span class="legend-dot" style="background:#2563eb"></span> Histórico salvo</span>
+                <span class="legend-chip"><span class="legend-dot" style="background:#16a34a"></span> Atualização ao vivo</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <h3>Resumo rápido</h3>
+                <div class="desc">Dados da sessão atual e status do usuário.</div>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="stats-row">
+                <div class="mini">
+                  <div class="label">Tempo</div>
+                  <div class="value" id="stat-time">0:00</div>
+                  <div class="small">sessão aberta</div>
+                </div>
+                <div class="mini">
+                  <div class="label">Distância</div>
+                  <div class="value" id="stat-dist">0m</div>
+                  <div class="small">trajeto atual</div>
+                </div>
+                <div class="mini">
+                  <div class="label">Pontos</div>
+                  <div class="value" id="stat-pts">0</div>
+                  <div class="small">coordenadas</div>
+                </div>
+                <div class="mini">
+                  <div class="label">Status</div>
+                  <div class="value" id="stat-status">—</div>
+                  <div class="small">GPS / clique</div>
+                </div>
+              </div>
+
+              <div style="height:18px"></div>
+
+              <div class="card" style="box-shadow:none">
+                <div class="card-head" style="padding:14px 0;border:none">
+                  <div>
+                    <h3 style="font-size:15px">Sessões recentes</h3>
+                    <div class="desc">Histórico resumido da conta logada.</div>
+                  </div>
+                </div>
+                <div class="card-body" style="padding:0">
+                  <div class="list" id="recent-list">
+                    <div class="empty">Nenhuma sessão carregada ainda.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Histórico -->
+      <section id="tab-historico" class="tab-panel">
+        <div class="section-grid">
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <h3>Gráfico de evolução diária</h3>
+                <div class="desc">Soma da distância por dia nas sessões do usuário.</div>
+              </div>
+            </div>
+            <div class="card-body">
+              <canvas id="evolution-chart" height="140"></canvas>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <h3>Meu Histórico</h3>
+                <div class="desc">Sessões salvas, distância, duração e calorias.</div>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="list" id="history-list">
+                <div class="empty">Carregando histórico…</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Ranking -->
+      <section id="tab-ranking" class="tab-panel">
+        <div class="section-grid">
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <h3>Ranking diário</h3>
+                <div class="desc">Top 3 com medalhas e o resto em sequência.</div>
+              </div>
+              <span class="pill" id="ranking-date">Hoje</span>
+            </div>
+            <div class="card-body">
+              <div class="list" id="ranking-list">
+                <div class="empty">Carregando ranking…</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <h3>Resumo do ranking</h3>
+                <div class="desc">Quem lidera agora e quanto falta para alcançar.</div>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="stats-row" style="grid-template-columns:repeat(2,minmax(0,1fr))">
+                <div class="mini">
+                  <div class="label">Líder</div>
+                  <div class="value" id="lead-name" style="font-size:18px">—</div>
+                  <div class="small" id="lead-meta">sem dados</div>
+                </div>
+                <div class="mini">
+                  <div class="label">Top 3</div>
+                  <div class="value" id="top3-count" style="font-size:22px">0</div>
+                  <div class="small">posições premiadas</div>
+                </div>
+              </div>
+              <div style="height:14px"></div>
+              <div class="empty">
+                As medalhas 🥇🥈🥉 aparecem automaticamente nos três primeiros lugares.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Ao vivo -->
+      <section id="tab-ao-vivo" class="tab-panel">
+        <div class="section-grid">
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <h3>Ao Vivo</h3>
+                <div class="desc">Atualizações recebidas via Socket.IO.</div>
+              </div>
+              <span class="pill" id="live-count">0 online</span>
+            </div>
+            <div class="card-body">
+              <div class="list" id="live-list">
+                <div class="empty">Aguardando atividade ao vivo…</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <h3>Eventos recentes</h3>
+                <div class="desc">Sessões iniciadas, paradas e últimas posições recebidas.</div>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="list" id="event-list">
+                <div class="empty">Nenhum evento ainda.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    const API = '';
+    const COLORS = ['#2563eb','#7c3aed','#d97706','#0f766e','#db2777','#059669'];
+
+    // DOM
+    const authScreen = document.getElementById('auth-screen');
+    const authMsg = document.getElementById('auth-msg');
+    const btnLogin = document.getElementById('btn-login');
+    const btnRegister = document.getElementById('btn-register');
+    const btnLogout = document.getElementById('btn-logout');
+    const nicknameInput = document.getElementById('nickname');
+    const nameInput = document.getElementById('name');
+    const userPill = document.getElementById('user-pill');
+
+    const tabs = [...document.querySelectorAll('.tab-btn')];
+    const panels = [...document.querySelectorAll('.tab-panel')];
+
+    const btnStart = document.getElementById('btn-start');
+    const btnStop = document.getElementById('btn-stop');
+    const sessionPill = document.getElementById('session-pill');
+    const statsPill = document.getElementById('stats-pill');
+    const modeBadge = document.getElementById('mode-badge');
+    const modeDot = document.getElementById('mode-dot');
+
+    const statTime = document.getElementById('stat-time');
+    const statDist = document.getElementById('stat-dist');
+    const statPts = document.getElementById('stat-pts');
+    const statStatus = document.getElementById('stat-status');
+
+    const recentList = document.getElementById('recent-list');
+    const historyList = document.getElementById('history-list');
+    const rankingList = document.getElementById('ranking-list');
+    const liveList = document.getElementById('live-list');
+    const eventList = document.getElementById('event-list');
+    const liveCount = document.getElementById('live-count');
+    const leadName = document.getElementById('lead-name');
+    const leadMeta = document.getElementById('lead-meta');
+    const top3Count = document.getElementById('top3-count');
+    const rankingDate = document.getElementById('ranking-date');
+
+    // State
+    let currentUser = null;
+    let sessionId = null;
+    let watchId = null;
+    let timerHandle = null;
+    let startTime = null;
+    let simMode = false;
+    let distM = 0;
+    let pts = [];
+    let map, polyline, marker;
+    let chart = null;
+    let socket = null;
+
+    function fmtDist(m){
+      if (!Number.isFinite(m)) return '0m';
+      return m < 1000 ? `${Math.round(m)}m` : `${(m/1000).toFixed(2)}km`;
+    }
+    function fmtTime(s){
+      s = Math.max(0, Math.floor(s || 0));
+      const h = Math.floor(s/3600);
+      const m = Math.floor((s%3600)/60);
+      const sec = s%60;
+      if (h > 0) return `${h}h ${String(m).padStart(2,'0')}min`;
+      return `${m}:${String(sec).padStart(2,'0')}`;
+    }
+    function haversine(lat1, lon1, lat2, lon2){
+      const R = 6371000;
+      const df = (lat2-lat1) * Math.PI / 180;
+      const dl = (lon2-lon1) * Math.PI / 180;
+      const a = Math.sin(df/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dl/2)**2;
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    }
+    function showMsg(text, ok=false){
+      authMsg.textContent = text;
+      authMsg.style.borderColor = ok ? 'rgba(34,197,94,.28)' : 'var(--line)';
+      authMsg.style.background = ok ? '#ecfdf5' : '#f8fafc';
+      authMsg.style.color = ok ? '#166534' : '#334155';
+    }
+    function setMode(text, color){
+      modeBadge.textContent = text;
+      modeBadge.style.color = color || '#e2e8f0';
+      modeDot.style.background = color || '#16a34a';
+    }
+    function pushEvent(title, meta){
+      const existing = eventList.querySelector('.empty');
+      if (existing) eventList.innerHTML = '';
+      const el = document.createElement('div');
+      el.className = 'item';
+      el.innerHTML = `
+        <div>
+          <strong>${title}</strong>
+          <div class="meta">${meta}</div>
+        </div>
+        <div class="right">${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div>
+      `;
+      eventList.prepend(el);
+      while (eventList.children.length > 8) eventList.removeChild(eventList.lastChild);
+    }
+
+    function saveCurrentUser(user){
+      currentUser = user;
+      localStorage.setItem('explorador_user', JSON.stringify(user));
+      userPill.textContent = `${user.name} · @${user.nickname}`;
+    }
+
+    function loadSavedUser(){
+      try {
+        const raw = localStorage.getItem('explorador_user');
+        if (!raw) return null;
+        return JSON.parse(raw);
+      } catch {
+        return null;
+      }
+    }
+
+    function initMap(){
+      if (map) return;
+      map = L.map('map').setView([-31.7707, -52.3414], 15);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap'
+      }).addTo(map);
+
+      map.on('click', e => {
+        if (!sessionId || !simMode) return;
+        addPoint(e.latlng.lat, e.latlng.lng);
+      });
+    }
+
+    function resetCurrentTrack(){
+      distM = 0;
+      pts = [];
+      startTime = Date.now();
+      if (polyline) { try { map.removeLayer(polyline); } catch(e){} }
+      if (marker) { try { map.removeLayer(marker); } catch(e){} }
+      polyline = null;
+      marker = null;
+      updateSessionStats();
+    }
+
+    function updateSessionStats(){
+      const elapsed = startTime ? Math.floor((Date.now() - startTime)/1000) : 0;
+      const status = simMode ? 'simulação' : 'GPS';
+      statTime.textContent = fmtTime(elapsed);
+      statDist.textContent = fmtDist(distM);
+      statPts.textContent = String(pts.length);
+      statStatus.textContent = status;
+      sessionPill.textContent = sessionId ? `Sessão: #${sessionId}` : 'Sessão: nenhuma';
+      statsPill.textContent = `⏱ ${fmtTime(elapsed)} · 📍 ${fmtDist(distM)} · ${pts.length} pts`;
+    }
+
+    function movementStatus(speedKmh){
+      if (speedKmh > 2.0) return 'andando';
+      if (speedKmh > 0.5) return 'devagar';
+      return 'parado';
+    }
+
+    function addPoint(lat, lon){
+      if (!sessionId) return;
+
+      if (pts.length > 0) {
+        const p = pts[pts.length - 1];
+        distM += haversine(p[0], p[1], lat, lon);
+      }
+      pts.push([lat, lon]);
+
+      if (!marker) {
+        marker = L.circleMarker([lat, lon], {
+          radius: 9, color: '#fff', weight: 2,
+          fillColor: '#ef4444', fillOpacity: 1
+        }).addTo(map).bindPopup('Posição atual');
+        map.setView([lat, lon], 17);
+      } else {
+        marker.setLatLng([lat, lon]);
+        map.panTo([lat, lon]);
+      }
+
+      if (!polyline) {
+        polyline = L.polyline([[lat, lon]], { color: '#ef4444', weight: 4 }).addTo(map);
+      } else {
+        polyline.addLatLng([lat, lon]);
+      }
+
+      updateSessionStats();
+
+      fetch('/location', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ session_id: sessionId, lat, lon })
+      }).catch(() => {});
+    }
+
+    async function api(path, options={}){
+      const res = await fetch(API + path, options);
+      let data = null;
+      try { data = await res.json(); } catch {}
+      if (!res.ok) {
+        const msg = data && (data.error || data.message) ? (data.error || data.message) : `Erro ${res.status}`;
+        throw new Error(msg);
+      }
+      return data;
+    }
+
+    function switchTab(tabId){
+      tabs.forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tabId));
+      panels.forEach(panel => panel.classList.toggle('active', panel.id === tabId));
+      if (tabId === 'tab-mapa' && map) {
+        setTimeout(() => map.invalidateSize(), 100);
+      }
+    }
+
+    async function login(register=false){
+      const nickname = nicknameInput.value.trim().toLowerCase();
+      const name = nameInput.value.trim();
+      if (!nickname) return showMsg('Digite um apelido.');
+      if (register && !name) return showMsg('Digite o nome para criar a conta.');
+
+      showMsg(register ? 'Criando conta…' : 'Entrando…');
+      const path = register ? '/auth/register' : '/auth/login';
+      const body = register ? { nickname, name } : { nickname };
+      try {
+        const data = await api(path, {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify(body)
+        });
+        saveCurrentUser({ user_id: data.user_id, name: data.name, nickname: data.nickname });
+        authScreen.classList.add('hidden');
+        document.getElementById('app').classList.remove('hidden');
+        initAfterLogin();
+        showMsg('Login realizado.', true);
+      } catch (err) {
+        showMsg(err.message);
+      }
+    }
+
+    function logout(){
+      localStorage.removeItem('explorador_user');
+      currentUser = null;
+      sessionId = null;
+      if (watchId !== null && navigator.geolocation) {
+        navigator.geolocation.clearWatch(watchId);
+        watchId = null;
+      }
+      clearInterval(timerHandle);
+      timerHandle = null;
+      document.getElementById('app').classList.add('hidden');
+      authScreen.classList.remove('hidden');
+      showMsg('Desconectado.');
+    }
+
+    async function startSession(){
+      if (!currentUser) return;
+      const data = await api('/session/start', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ user_id: currentUser.user_id })
+      });
+      sessionId = data.session_id;
+      resetCurrentTrack();
+      btnStart.classList.add('hidden');
+      btnStop.classList.remove('hidden');
+      if (simMode) {
+        setMode('clique no mapa', '#d97706');
+      } else {
+        setMode('GPS ativo', '#16a34a');
+      }
+      updateSessionStats();
+      timerHandle = setInterval(updateSessionStats, 1000);
+      pushEvent(`Sessão iniciada #${sessionId}`, `${currentUser.nickname} começou uma nova sessão.`);
+      if (navigator.geolocation && !simMode) {
+        watchId = navigator.geolocation.watchPosition(
+          pos => addPoint(pos.coords.latitude, pos.coords.longitude),
+          () => {
+            simMode = true;
+            setMode('GPS falhou → clique no mapa', '#d97706');
+            pushEvent('Fallback de GPS', 'O navegador não entregou posição. Clique no mapa para continuar.');
+          },
+          { enableHighAccuracy:true, maximumAge:0, timeout:15000 }
+        );
+      }
+      await refreshAll();
+    }
+
+    async function stopSession(){
+      if (!sessionId) return;
+      if (watchId !== null && navigator.geolocation) {
+        navigator.geolocation.clearWatch(watchId);
+        watchId = null;
+      }
+      clearInterval(timerHandle);
+      timerHandle = null;
+      const sid = sessionId;
+      await api('/session/stop/' + sid, { method: 'POST' });
+      pushEvent(`Sessão encerrada #${sid}`, `Distância final: ${fmtDist(distM)}.`);
+      sessionId = null;
+      btnStop.classList.add('hidden');
+      btnStart.classList.remove('hidden');
+      setMode(simMode ? 'modo simulação' : 'modo GPS', '#64748b');
+      sessionPill.textContent = 'Sessão: nenhuma';
+      updateSessionStats();
+      await refreshAll();
+    }
+
+    async function loadHistoryAndChart(){
+      if (!currentUser) return;
+      const sessions = await api(`/users/${currentUser.user_id}/sessions`);
+      renderUserSessions(sessions);
+      renderEvolutionChart(sessions);
+      renderRecentList(sessions);
+    }
+
+    function renderUserSessions(sessions){
+      if (!sessions.length) {
+        historyList.innerHTML = '<div class="empty">Nenhuma sessão encontrada para este usuário.</div>';
+        return;
+      }
+      historyList.innerHTML = sessions.map((s, idx) => `
+        <div class="item">
+          <div>
+            <strong>Sessão #${s.id}</strong>
+            <div class="meta">
+              ${s.started_at.slice(0,16).replace('T',' ')} ${s.ended_at ? '• encerrada' : '• ativa'}<br>
+              ${fmtDist(s.distance_m)} · ${s.point_count} pts · ${s.elapsed_s ? fmtTime(s.elapsed_s) : '0:00'} · ${s.calories || 0} kcal
+            </div>
+          </div>
+          <div class="right">
+            <span class="rank-badge">#${idx+1}</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderRecentList(sessions){
+      if (!sessions.length) {
+        recentList.innerHTML = '<div class="empty">Sem histórico ainda.</div>';
+        return;
+      }
+      recentList.innerHTML = sessions.slice(0,4).map((s, idx) => `
+        <div class="item">
+          <div>
+            <strong>Sessão #${s.id}</strong>
+            <div class="meta">${s.started_at.slice(0,16).replace('T',' ')} · ${fmtDist(s.distance_m)} · ${s.point_count} pts</div>
+          </div>
+          <div class="right">${s.ended_at ? 'finalizada' : 'ativa'}</div>
+        </div>
+      `).join('');
+    }
+
+    function renderEvolutionChart(sessions){
+      const byDay = new Map();
+      sessions.forEach(s => {
+        const day = s.started_at.slice(0,10);
+        byDay.set(day, (byDay.get(day) || 0) + (s.distance_m || 0));
+      });
+      const labels = [...byDay.keys()].sort();
+      const values = labels.map(d => +(byDay.get(d)/1000).toFixed(2));
+
+      const ctx = document.getElementById('evolution-chart').getContext('2d');
+      if (chart) chart.destroy();
+
+      chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Distância (km)',
+            data: values,
+            tension: 0.35,
+            fill: true
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: true },
+            tooltip: { mode: 'index', intersect: false }
+          },
+          scales: {
+            y: { beginAtZero: true, ticks: { callback: v => v + ' km' } }
+          }
+        }
+      });
+    }
+
+    async function loadRanking(){
+      const ranking = await api('/ranking/daily');
+      rankingDate.textContent = new Date().toLocaleDateString('pt-BR');
+      top3Count.textContent = String(Math.min(3, ranking.length));
+
+      if (!ranking.length) {
+        rankingList.innerHTML = '<div class="empty">Ninguém apareceu no ranking de hoje.</div>';
+        leadName.textContent = '—';
+        leadMeta.textContent = 'sem dados';
+        return;
+      }
+
+      leadName.textContent = `${ranking[0].name}`;
+      leadMeta.textContent = `@${ranking[0].nickname} · ${fmtDist(ranking[0].distance_m)} · ${ranking[0].session_count} sessão(ões)`;
+
+      rankingList.innerHTML = ranking.map((r, idx) => {
+        const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : '';
+        const style = idx < 3 ? 'background:#fff7ed;border-color:#fed7aa' : '';
+        return `
+          <div class="item" style="${style}">
+            <div class="rank-row">
+              <div class="medal">${medal || `<span class="rank-num">${r.position}</span>`}</div>
+              <div>
+                <strong>${r.name} <span style="color:#64748b;font-weight:600">@${r.nickname}</span></strong>
+                <div class="meta">${fmtDist(r.total_distance_m || 0)} · ${r.elapsed_formatted || '0:00'} · ${r.session_count || 0} sessão(ões)</div>
+              </div>
+              <div class="right">
+                <div class="status-ok">${idx < 3 ? 'top 3' : `#${r.position}`}</div>
+                <div>${r.calories || 0} kcal</div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function loadLive(){
+      const live = await api('/ranking/live');
+      liveCount.textContent = `${live.length} online`;
+      if (!live.length) {
+        liveList.innerHTML = '<div class="empty">Nenhum usuário online no momento.</div>';
+        return;
+      }
+
+      liveList.innerHTML = live.map((u, idx) => {
+        const speed = Number(u.current_speed_kmh || 0).toFixed(1);
+        return `
+          <div class="item">
+            <div class="rank-row">
+              <div class="rank-num">${idx+1}</div>
+              <div>
+                <strong>${u.name} <span style="color:#64748b;font-weight:600">@${u.nickname}</span></strong>
+                <div class="meta">
+                  Status: <span class="${u.status === 'andando' ? 'status-ok' : (u.status === 'devagar' ? 'status-off' : 'status-stop')}">${u.status || '—'}</span>
+                  · Velocidade: ${speed} km/h<br>
+                  Última vista há ${u.last_seen_s || 0}s
+                  ${u.distance_m ? ` · ${fmtDist(u.distance_m)}` : ''}
+                </div>
+              </div>
+              <div class="right">
+                <div>${u.calories || 0} kcal</div>
+                <div>${u.elapsed_s ? fmtTime(u.elapsed_s) : '0:00'}</div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function loadHistoricalTracks(){
+      const sessions = await api('/sessions');
+      if (!map) return;
+      sessions.slice(0, 30).reverse().forEach((s, idx) => {
+        fetch(`/session/${s.id}/track`)
+          .then(r => r.json())
+          .then(track => {
+            if (!Array.isArray(track) || track.length < 2) return;
+            L.polyline(track.map(p => [p.lat, p.lon]), {
+              color: COLORS[idx % COLORS.length],
+              weight: 4,
+              opacity: 0.65
+            }).addTo(map).bindPopup(`<b>Sessão #${s.id}</b><br>${fmtDist(s.distance_m)} · ${s.point_count} pts`);
+          })
+          .catch(() => {});
+      });
+    }
+
+    async function refreshAll(){
+      if (!currentUser) return;
+      await Promise.allSettled([
+        loadHistoryAndChart(),
+        loadRanking(),
+        loadLive()
+      ]);
+    }
+
+    function initSocket(){
+      if (socket) return;
+      socket = io();
+
+      socket.on('connect', () => pushEvent('Socket conectado', 'Atualização ao vivo ativada.'));
+      socket.on('disconnect', () => pushEvent('Socket desconectado', 'Sem atualização em tempo real por enquanto.'));
+
+      socket.on('session_start', payload => {
+        if (!payload) return;
+        pushEvent('Sessão iniciada ao vivo', `user_id=${payload.user_id || '—'} · session_id=${payload.session_id || '—'}`);
+        loadLive().catch(() => {});
+      });
+
+      socket.on('session_stop', payload => {
+        if (!payload) return;
+        pushEvent('Sessão encerrada ao vivo', `session_id=${payload.session_id || '—'}`);
+        refreshAll().catch(() => {});
+      });
+
+      socket.on('location_update', payload => {
+        if (!payload) return;
+        const name = payload.name || 'Anônimo';
+        pushEvent('Localização recebida', `${name} · ${fmtDist(payload.distance_m || 0)} · ${payload.status || '—'}`);
+
+        if (currentUser && payload.user_id === currentUser.user_id) {
+          loadHistoryAndChart().catch(() => {});
+        }
+        loadRanking().catch(() => {});
+        loadLive().catch(() => {});
+      });
+    }
+
+    function initAfterLogin(){
+      initMap();
+      initSocket();
+      updateSessionStats();
+      if (!navigator.geolocation) {
+        simMode = true;
+        setMode('modo simulação', '#d97706');
+      } else {
+        setMode('pronto', '#64748b');
+      }
+      loadHistoricalTracks().catch(()=>{});
+      refreshAll().catch(()=>{});
+      setTimeout(() => {
+        if (map) map.invalidateSize();
+      }, 120);
+    }
+
+    // Events
+    tabs.forEach(btn => {
+      btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+    });
+
+    btnLogin.addEventListener('click', () => login(false));
+    btnRegister.addEventListener('click', () => login(true));
+    btnLogout.addEventListener('click', logout);
+
+    btnStart.addEventListener('click', async () => {
+      try { await startSession(); }
+      catch (err) { showMsg(err.message || 'Falha ao iniciar sessão.'); }
+    });
+    btnStop.addEventListener('click', async () => {
+      try { await stopSession(); }
+      catch (err) { showMsg(err.message || 'Falha ao encerrar sessão.'); }
+    });
+
+    nicknameInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter') login(false);
+    });
+    nameInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter') login(true);
+    });
+
+    // Boot
+    (function boot(){
+      const saved = loadSavedUser();
+      if (saved && saved.user_id) {
+        saveCurrentUser(saved);
+        authScreen.classList.add('hidden');
+        document.getElementById('app').classList.remove('hidden');
+        initAfterLogin();
+        return;
+      }
+      if (!navigator.geolocation) {
+        simMode = true;
+        setMode('modo simulação', '#d97706');
+      }
+    })();
+
+    // One initial map + data load when app becomes visible
+    if (currentUser) {
+      initMap();
+    }
+  </script>
+</body>
+</html>
