@@ -1,110 +1,77 @@
 # 🗺️ Explorador Urbano
 
-> **Aplicação web de rastreamento de percursos urbanos em tempo real, com ranking multiusuário e atualização via WebSocket.**
+> A web app that tracks urban routes in real time, drawing each user's GPS trail on a live map and ranking everyone by daily distance — updates pushed over WebSocket.
+
+<!-- TODO: screenshot do mapa + ranking -->
+![demo](docs/demo.png)
 
 [![Python](https://img.shields.io/badge/Python-3.10+-blue?logo=python)](https://python.org)
-[![Flask](https://img.shields.io/badge/Flask-3.x-black?logo=flask)](https://flask.palletsprojects.com)
+[![Flask](https://img.shields.io/badge/Flask-black?logo=flask)](https://flask.palletsprojects.com)
 [![SQLite](https://img.shields.io/badge/SQLite-WAL_mode-003B57?logo=sqlite)](https://sqlite.org)
 [![Leaflet](https://img.shields.io/badge/Leaflet.js-1.9.4-199900?logo=leaflet)](https://leafletjs.com)
 [![Socket.IO](https://img.shields.io/badge/Socket.IO-realtime-010101?logo=socket.io)](https://socket.io)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
----
-
-## 📌 Contexto Acadêmico
-
-Projeto desenvolvido para a disciplina optativa **"Uso de Inteligência Artificial no Desenvolvimento de Software"** do curso de **Engenharia de Computação — UFPel (2026)**.
-
-O objetivo da disciplina era aprender a utilizar ferramentas de IA generativa (vibecoding) de forma estruturada e consciente: não apenas como gerador de código, mas como acelerador técnico onde as decisões de arquitetura, requisitos e revisão crítica partiram integralmente do aluno.
-
-**Modelo utilizado:** Claude (Anthropic) via claude.ai  
-**Metodologia:** Documentada em [`relatorio_explorador.pdf`](relatorio_explorador.pdf)
+> 🇧🇷 Versão em português: [`README.pt.md`](README.pt.md)
 
 ---
 
-## 📸 Preview
+## What it does
 
-> *GPS ao vivo no celular → trilha desenhada em tempo real → ranking atualizado instantaneamente*
+Each user logs in by nickname and starts a tracking session. The browser streams GPS
+positions (`navigator.geolocation.watchPosition`) to the server, which stores every point,
+accumulates the traveled distance with the Haversine formula, and broadcasts the update to
+all connected clients over Socket.IO. The frontend (single-page, four tabs) shows the live
+trail on a Leaflet map, the user's session history with a Chart.js evolution chart, a daily
+distance ranking with medals for the top 3, and a live feed of who is currently moving.
 
-```
-Aba Mapa          Aba Histórico     Aba Ranking       Aba Ao Vivo
-┌────────────┐    ┌────────────┐    ┌────────────┐    ┌────────────┐
-│  🗺️ mapa   │    │ 📊 gráfico │    │ 🥇 Eduardo │    │ 🟢 Eduardo │
-│  com       │    │ distância  │    │ 🥈 Maria   │    │ andando    │
-│  trilhas   │    │ diária     │    │ 🥉 João    │    │ 4.2 km/h   │
-│  coloridas │    │            │    │            │    │            │
-└────────────┘    └────────────┘    └────────────┘    └────────────┘
-```
+On the desktop, where real GPS is usually unavailable, a **simulation mode** lets you click
+on the map to drop points — the same pipeline runs end to end.
 
 ---
 
-## ✨ Funcionalidades
+## Tech stack
 
-### 📍 Rastreamento GPS
-- Captura de posição via `navigator.geolocation.watchPosition` no browser do celular
-- Modo simulação por clique no mapa (para testes no desktop)
-- Fallback automático GPS → simulação em caso de erro
-- Trilha atual desenhada em tempo real (polilinha vermelha)
-- Trilhas históricas de sessões anteriores em cores distintas
+| Layer      | Technology                                          |
+|------------|-----------------------------------------------------|
+| Backend    | Python 3.10+ · Flask                                |
+| Real-time  | Flask-SocketIO (`async_mode="threading"`)           |
+| Database   | SQLite3 (stdlib) · WAL journal mode                 |
+| Frontend   | HTML5 · CSS3 · vanilla JS ES6+ (single file)        |
+| Map        | Leaflet.js 1.9.4 · OpenStreetMap tiles (via CDN)    |
+| Charts     | Chart.js (via CDN)                                  |
+| Geolocation| Web Geolocation API                                 |
+| TLS        | `cryptography` (programmatic self-signed cert), with `openssl` CLI fallback |
 
-### 👤 Usuários
-- Cadastro por nome e apelido (sistema simples, sem senha — foco em demo)
-- Login por apelido
-- Sessão salva em `localStorage` para não logar novamente
-
-### 📊 Estatísticas por Sessão
-- Distância percorrida (m / km)
-- Duração (hh:mm:ss)
-- Pace (min/km)
-- Velocidade média e atual (km/h)
-- Calorias estimadas (~60 kcal/km para 70 kg)
-- Status de movimento: `andando` · `devagar` · `parado`
-
-### 🏆 Ranking
-- Ranking diário por distância total com medalhas para o top 3
-- Calculado por query SQL direta — sem loop sobre pontos
-
-### 📡 Tempo Real (WebSocket)
-- Atualização ao vivo via Socket.IO: posições, sessões iniciadas/encerradas
-- Lista de usuários ativos nos últimos 5 minutos com status e velocidade
-- Feed de eventos na aba "Ao Vivo"
+No external services: no managed database, no cloud, no ORM.
 
 ---
 
-## 🛠️ Stack Técnica
+## Running it
 
-| Camada    | Tecnologia                            |
-|-----------|---------------------------------------|
-| Backend   | Python 3.10+ · Flask                  |
-| WebSocket | Flask-SocketIO (async threading)      |
-| Banco     | SQLite3 (stdlib) · WAL mode           |
-| Frontend  | HTML5 · CSS3 · JavaScript ES6+        |
-| Mapa      | Leaflet.js 1.9.4 · OpenStreetMap      |
-| Gráfico   | Chart.js                              |
-| GPS       | Web Geolocation API                   |
-| SSL       | `cryptography` (geração programática) |
-
-**Zero dependências externas de serviço:** sem banco externo, sem cloud, sem ORM.
-
----
-
-## 🚀 Como Rodar
-
-### 1. Clonar e instalar dependências
+The source lives under `src/`. All commands below start from the repository root.
 
 ```bash
+# 1. clone
 git clone https://github.com/EduardoTBuss/explorador-urbano
 cd explorador-urbano
-pip install -r requirements.txt
-```
 
-### 2. Rodar o servidor
+# 2. create and activate a virtual environment
+python -m venv .venv
+# Windows (PowerShell):
+.venv\Scripts\Activate.ps1
+# Linux / macOS:
+source .venv/bin/activate
 
-```bash
+# 3. install dependencies
+pip install -r src/requirements.txt
+
+# 4. start the server (run from inside src/)
+cd src
 python main.py
 ```
 
-Saída esperada:
+Expected output:
 
 ```
 ====================================================
@@ -115,68 +82,101 @@ Saída esperada:
 ====================================================
 ```
 
-### 3. Acessar no browser
+Then open **https://localhost:8443** in your browser.
+
+The SQLite database (`explorador.db`) and the self-signed certificate (`cert.pem` /
+`key.pem`) are created automatically on first run, inside `src/`.
+
+> ⚠️ The programmatic certificate generation relies on the `cryptography` package, which is
+> **not pinned** in `src/requirements.txt`. If it is missing, the app falls back to invoking
+> the `openssl` CLI. To guarantee the in-process path: `pip install cryptography`.
+
+### Using it on a phone (real GPS)
+
+Browsers block `navigator.geolocation` over plain HTTP outside `localhost`, so a phone needs
+HTTPS. The phone and the host must be on the same network — a phone hotspot is the most
+reliable option on isolated university Wi-Fi:
 
 ```
-https://localhost:8443
+1. Turn on the phone hotspot
+2. Connect the laptop to that hotspot
+3. cd src && python main.py
+4. On the phone browser: https://192.168.x.x:8443
+5. Accept the "not secure / untrusted" warning (the self-signed cert)
 ```
 
-> O banco `explorador.db` e o certificado SSL são criados automaticamente na primeira execução.
+The server generates the self-signed certificate with the host's local IP in the SAN
+(Subject Alternative Name) field, which is what lets the phone reach it over `https://` and
+the browser release the geolocation API.
 
 ---
 
-## 📱 Usando no Celular (GPS Real)
+## Technical decisions
 
-Para capturar GPS real do celular, notebook e celular precisam estar na **mesma rede**. A forma mais confiável em rede universitária (que isola dispositivos) é usar o **hotspot do celular**:
+**Why WebSocket for real time?** Tracking is inherently push-based: one user's new position
+must reach every other connected client without them polling. Flask-SocketIO keeps a
+persistent channel and the server emits `location_update`, `session_start` and
+`session_stop` events as they happen. Clients react by refreshing the live list, ranking and
+their own history — no fixed-interval polling against the API.
 
-```
-1. Ativa o hotspot no celular
-2. Conecta o notebook no Wi-Fi do hotspot
-3. Roda: python main.py
-4. No Chrome do celular: https://192.168.x.x:8443
-5. Aceita o aviso de "conexão não confiável"
-   (certificado autoassinado — necessário para liberar GPS via HTTPS)
-```
+**Why SQLite in WAL mode?** The app is single-file and dependency-light by design, so SQLite
+fits. But Flask-SocketIO runs in `threading` mode, so multiple requests (and the location
+writer) hit the same database file concurrently. The default rollback journal serializes
+readers against the writer; `PRAGMA journal_mode=WAL` lets readers proceed without blocking
+the writer, which keeps the live ranking and track queries responsive while points are being
+ingested. Connections are opened with `check_same_thread=False` for the same reason.
 
-### Por que HTTPS é necessário para GPS?
+**Incremental distance accumulation.** Each `POST /location` computes only the Haversine
+delta from the previous point and adds it to `sessions.distance_m`. Distance is never
+recomputed over the full point list on every update — that O(n) recompute would degrade as a
+session grows long.
 
-Browsers modernos bloqueiam o `navigator.geolocation` em páginas HTTP fora do `localhost`. Para contornar isso sem depender de serviços externos, a aplicação **gera automaticamente um certificado SSL autoassinado** com o IP local da máquina incluído no campo SAN (Subject Alternative Name). Isso permite que o celular acesse via `https://` e o browser libere a API de geolocalização.
+**How the multi-user ranking is computed.** Two distinct views:
+- **Daily ranking** (`GET /ranking/daily`): a single aggregated SQL query groups today's
+  sessions by user (matched via `started_at LIKE 'YYYY-MM-DD%'`), sums `distance_m` and
+  elapsed seconds, and orders by total distance descending. Positions and medals (top 3) are
+  assigned from that order. No per-point looping.
+- **Live ranking** (`GET /ranking/live`): reads the `online_status` table (one row per user,
+  upserted on every location update), drops anyone whose `last_seen` is older than 5 minutes,
+  derives current speed from the last 6 points, and sorts by distance. This is what powers
+  the "who's moving now" feed.
+
+Movement status is bucketed from current speed: `> 2.0 km/h` → *andando*, `> 0.5` →
+*devagar*, else *parado*.
 
 ---
 
-## 🔌 Endpoints da API
+## API reference
 
-### Autenticação
+### Auth
+| Method | Route             | Body               | Description            |
+|--------|-------------------|--------------------|------------------------|
+| POST   | `/auth/register`  | `{name, nickname}` | Create a user          |
+| POST   | `/auth/login`     | `{nickname}`       | Log in (nickname only) |
+| GET    | `/users`          | —                  | List users             |
 
-| Método | Rota             | Body               | Descrição         |
-|--------|------------------|--------------------|-------------------|
-| POST   | `/auth/register` | `{name, nickname}` | Cria usuário      |
-| POST   | `/auth/login`    | `{nickname}`       | Login             |
-| GET    | `/users`         | —                  | Lista usuários    |
-
-### Sessões & Localização
-
-| Método | Rota                        | Body                     | Descrição              |
-|--------|-----------------------------|--------------------------|------------------------|
-| POST   | `/session/start`            | `{user_id}`              | Inicia sessão          |
-| POST   | `/session/stop/<id>`        | —                        | Encerra sessão         |
-| POST   | `/location`                 | `{session_id, lat, lon}` | Registra ponto GPS     |
-| GET    | `/users/<user_id>/sessions` | —                        | Histórico do usuário   |
-| GET    | `/session/<id>/track`       | —                        | Pontos GPS da sessão   |
+### Sessions & location
+| Method | Route                         | Body                     | Description           |
+|--------|-------------------------------|--------------------------|-----------------------|
+| POST   | `/session/start`              | `{user_id}`              | Start a session       |
+| POST   | `/session/stop/<id>`          | —                        | End a session         |
+| POST   | `/location`                   | `{session_id, lat, lon}` | Record a GPS point    |
+| GET    | `/sessions`                   | —                        | All sessions          |
+| GET    | `/users/<user_id>/sessions`   | —                        | A user's history      |
+| GET    | `/session/<id>/track`         | —                        | A session's GPS points|
 
 ### Ranking
+| Method | Route             | Description                            |
+|--------|-------------------|----------------------------------------|
+| GET    | `/ranking/daily`  | Today's ranking by total distance      |
+| GET    | `/ranking/live`   | Users active in the last 5 minutes     |
 
-| Método | Rota             | Descrição                         |
-|--------|------------------|-----------------------------------|
-| GET    | `/ranking/daily` | Ranking de hoje por distância     |
-| GET    | `/ranking/live`  | Usuários ativos (últimos 5 min)   |
-
-### Evento WebSocket — `location_update`
-
+### WebSocket event — `location_update`
 ```json
 {
   "user_id": 1,
   "nickname": "edu",
+  "name": "Eduardo",
   "lat": -31.7707,
   "lon": -52.3414,
   "status": "andando",
@@ -186,98 +186,78 @@ Browsers modernos bloqueiam o `navigator.geolocation` em páginas HTTP fora do `
   "calories": 23
 }
 ```
+Also emitted: `session_start` and `session_stop`.
 
 ---
 
-## 🗄️ Banco de Dados
-
-Criado automaticamente em `explorador.db` na primeira execução.
+## Data model
 
 ```sql
-users        → id, name, nickname, created_at
-sessions     → id, user_id, started_at, ended_at, distance_m
-points       → id, session_id, lat, lon, ts
-online_status→ user_id, session_id, last_lat, last_lon, last_seen, status
-```
-
-**Distância acumulada incremental:** a coluna `distance_m` é atualizada a cada ponto recebido somando apenas o delta em relação ao ponto anterior (via fórmula de Haversine). Evita recalcular sobre todos os pontos — operação O(n) que travaria sessões longas.
-
-**WAL mode:** `PRAGMA journal_mode=WAL` permite leituras simultâneas sem bloquear escrita — necessário com Flask threading.
-
----
-
-## 🏗️ Arquitetura
-
-```
-Celular (browser)
-  │  navigator.geolocation.watchPosition()
-  │  POST /location  (a cada ~3–5 s)
-  ▼
-Flask + Flask-SocketIO  (main.py)
-  │  salva ponto no SQLite
-  │  atualiza distance_m (delta incremental + Haversine)
-  │  calcula velocidade atual (últimos 6 pontos)
-  │  emite location_update → todos os clientes via Socket.IO
-  ▼
-SQLite WAL  (explorador.db)
-
-Outros browsers conectados
-  recebem location_update via WebSocket
-  atualizam aba "Ao Vivo" e Ranking em tempo real
+users         → id, name, nickname, created_at
+sessions      → id, user_id, started_at, ended_at, distance_m
+points        → id, session_id, lat, lon, ts
+online_status → user_id, session_id, last_lat, last_lon, last_seen, status
 ```
 
 ---
 
-## 🤖 Uso de Inteligência Artificial
-
-Este projeto foi desenvolvido com uso extensivo de IA generativa como parte dos objetivos da disciplina. O processo completo está documentado em **[`relatorio_ia.pdf`](relatorio_ia.pdf)**.
-
-**Resumo do processo:**
-
-| Etapa | O que foi feito |
-|-------|----------------|
-| 1 | Envio de proposta PDF estruturada com motivação, fluxo de uso e escolhas técnicas |
-| 2 | Análise do código base pelo modelo (ZIP) para compreender arquitetura existente |
-| 3 | Especificação de 10 requisitos detalhados → plano + código gerado |
-| 4 | Revisão do código final pelo modelo sem modificações → 5 bugs identificados |
-| 5 | Correção cirúrgica dos bugs identificados |
-
-**O diferencial da abordagem:** ao invés de pedir código diretamente, a IA recebeu uma proposta estruturada com contexto completo — motivação, público-alvo, escolhas técnicas já pensadas. As decisões de arquitetura e requisitos partiram integralmente do aluno; a IA foi utilizada como ferramenta de aceleração.
-
----
-
-## 🔮 Melhorias Futuras
-
-- [ ] Validação de input nos endpoints (`lat/lon` fora de range, campos obrigatórios)
-- [ ] Mover `SECRET_KEY` para variável de ambiente (`.env`)
-- [ ] Mapa de calor das ruas mais percorridas (heatmap Leaflet)
-- [ ] Exportar percurso como GPX (compatível com Strava / Garmin)
-- [ ] PWA para instalar no celular como app nativo
-- [ ] Separar rotas em Blueprints Flask (`auth`, `sessions`, `ranking`)
-
----
-
-## 📁 Estrutura do Repositório
+## Repository layout
 
 ```
 explorador-urbano/
-├── README.md
-├── relatorio_explorador.pdf
+├── README.md                # this file (English, showcase)
+├── README.pt.md             # Portuguese version
+├── LICENSE                  # MIT
+├── relatorio_explorador.pdf # methodology / AI-assisted process report
 └── src/
-    ├── main.py              # Servidor Flask: rotas, WebSocket, SSL, lógica
-    ├── requirements.txt     # Dependências Python
+    ├── main.py              # Flask server: routes, WebSocket, SSL, logic
+    ├── requirements.txt     # Python dependencies
     └── static/
-        └── index.html       # Frontend completo (HTML + CSS + JS em arquivo único)
+        └── index.html       # full frontend (HTML + CSS + JS in one file)
 ```
 
-> `explorador.db`, `cert.pem` e `key.pem` são gerados automaticamente e não estão versionados.
+`explorador.db`, `cert.pem` and `key.pem` are generated at runtime and are not versioned.
 
 ---
 
-## 📄 Licença
+## Status & known limitations
 
-MIT — veja [LICENSE](LICENSE).
+This is a portfolio / coursework demo, not hardened for production:
+
+- **No real authentication** — login is by nickname only, with no password or session token.
+  Knowing a nickname is enough to act as that user.
+- **`SECRET_KEY` is hardcoded** in `main.py`; it should come from an environment variable.
+- **No input validation** on the endpoints — out-of-range `lat`/`lon` are accepted, and a
+  `/location` body missing keys can raise a `KeyError`.
+- **`cryptography` is not pinned** in `requirements.txt` (see the note under "Running it");
+  the `-e flask` line in that file is also unusual.
+- **CORS is open** (`cors_allowed_origins="*"`) on Socket.IO.
+- **Development server** (`socketio.run`) — no production WSGI server.
+- **Calories** are a rough estimate (`km × 60`), independent of weight or pace.
+- **Everything in two files** — backend logic in `main.py`, the entire frontend in
+  `static/index.html`.
+
+### Roadmap
+- [ ] Input validation on endpoints
+- [ ] Move `SECRET_KEY` to `.env` and pin `cryptography`
+- [ ] Heatmap of most-traveled streets (Leaflet heatmap)
+- [ ] Export routes as GPX (Strava / Garmin)
+- [ ] Installable PWA
+- [ ] Split routes into Flask Blueprints (`auth`, `sessions`, `ranking`)
+
+### Suggested deployment
+For a public demo, run behind a production WSGI/ASGI server with WebSocket support
+(e.g. `gunicorn` with an `eventlet`/`gevent` worker, or `uvicorn` fronting an ASGI bridge),
+put it behind a reverse proxy (nginx) terminating a real TLS certificate (Let's Encrypt), and
+externalize secrets first. The bundled self-signed certificate is intended only for local
+LAN/phone testing.
 
 ---
 
-*Desenvolvido para a disciplina de Uso de IA — Engenharia de Computação, UFPel (2026)*
+## License
+
+MIT © 2026 Eduardo Timm Buss — see [LICENSE](LICENSE).
+
+---
+
+*Built for the "AI in Software Development" course — Computer Engineering, UFPel (2026).*

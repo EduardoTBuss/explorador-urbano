@@ -1,0 +1,30 @@
+# Byte-compiled / cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# SQLite (generated at runtime, incl. WAL sidecar files)
+*.db
+*.db-wal
+*.db-shm
+
+# Generated self-signed TLS material
+cert.pem
+key.pem
+
+# Secrets / environment
+.env
+
+# Flask instance folder
+instance/
+
+# Editor / OS noise
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
