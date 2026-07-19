@@ -260,4 +260,4 @@ MIT © 2026 Eduardo Timm Buss — see [LICENSE](LICENSE).
 
 ---
 
-*Built for the "AI in Software Development" course — Computer Engineering, UFPel (2026).*
+*Built for the "AI in Software Development" course — Computer Engineering, Federal University of Pelotas (UFPel, 2026), taught by Prof. [Gerson Geraldo H. Cavalheiro](https://wp.ufpel.edu.br/gersonc/).*
