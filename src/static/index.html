@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -368,29 +368,29 @@
         <div class="brand-badge">🗺️</div>
         <div>
           <h1>Explorador Urbano</h1>
-          <p>Login antes do app, histórico, ranking e ao vivo.</p>
+          <p>Sign in first — then map, history, ranking and live view.</p>
         </div>
       </div>
 
       <div class="auth-grid">
         <div class="field">
-          <label for="nickname">Apelido</label>
-          <input id="nickname" type="text" placeholder="ex.: diogo" autocomplete="username" />
+          <label for="nickname">Nickname</label>
+          <input id="nickname" type="text" placeholder="e.g. diogo" autocomplete="username" />
         </div>
         <div class="field">
-          <label for="name">Nome</label>
-          <input id="name" type="text" placeholder="para cadastro novo" autocomplete="name" />
+          <label for="name">Name</label>
+          <input id="name" type="text" placeholder="for new accounts" autocomplete="name" />
         </div>
         <div class="auth-actions">
-          <button class="btn btn-primary" id="btn-login">Entrar</button>
-          <button class="btn btn-ghost" id="btn-register">Criar conta</button>
+          <button class="btn btn-primary" id="btn-login">Sign in</button>
+          <button class="btn btn-ghost" id="btn-register">Create account</button>
         </div>
       </div>
 
       <div class="auth-note">
-        Use o apelido para entrar. Se o usuário não existir, crie uma conta.
+        Use your nickname to sign in. If the user doesn't exist, create an account.
       </div>
-      <div class="auth-msg" id="auth-msg">Pronto para login.</div>
+      <div class="auth-msg" id="auth-msg">Ready to sign in.</div>
     </div>
   </div>
 
@@ -401,19 +401,19 @@
           <div class="title-icon">🧭</div>
           <div class="title-copy">
             <h2>Explorador Urbano</h2>
-            <div class="sub">Mapa · Meu Histórico · Ranking · Ao Vivo</div>
+            <div class="sub">Map · My History · Ranking · Live</div>
           </div>
         </div>
         <div class="user-chip">
-          <span class="pill" id="user-pill">Usuário</span>
-          <button class="btn btn-danger" id="btn-logout">Sair</button>
+          <span class="pill" id="user-pill">User</span>
+          <button class="btn btn-danger" id="btn-logout">Log out</button>
         </div>
       </div>
       <nav class="nav">
-        <button class="tab-btn active" data-tab="tab-mapa">Mapa</button>
-        <button class="tab-btn" data-tab="tab-historico">Meu Histórico</button>
+        <button class="tab-btn active" data-tab="tab-mapa">Map</button>
+        <button class="tab-btn" data-tab="tab-historico">My History</button>
         <button class="tab-btn" data-tab="tab-ranking">Ranking</button>
-        <button class="tab-btn" data-tab="tab-ao-vivo">Ao Vivo</button>
+        <button class="tab-btn" data-tab="tab-ao-vivo">Live</button>
       </nav>
     </header>
 
@@ -424,23 +424,23 @@
           <div class="card">
             <div class="card-head">
               <div>
-                <h3>Mapa</h3>
-                <div class="desc">Inicie uma sessão e o trajeto aparece em tempo real.</div>
+                <h3>Map</h3>
+                <div class="desc">Start a session and the route appears in real time.</div>
               </div>
-              <div class="status-pill"><span class="status-dot" id="mode-dot"></span><span id="mode-badge">modo: GPS</span></div>
+              <div class="status-pill"><span class="status-dot" id="mode-dot"></span><span id="mode-badge">mode: GPS</span></div>
             </div>
             <div class="card-body">
               <div class="session-actions">
-                <button class="btn btn-green" id="btn-start">▶ Iniciar</button>
-                <button class="btn btn-red hidden" id="btn-stop">⏹ Parar</button>
-                <span class="pill" id="session-pill">Sessão: nenhuma</span>
+                <button class="btn btn-green" id="btn-start">▶ Start</button>
+                <button class="btn btn-red hidden" id="btn-stop">⏹ Stop</button>
+                <span class="pill" id="session-pill">Session: none</span>
                 <span class="pill" id="stats-pill">⏱ 0:00 · 📍 0m · 0 pts</span>
               </div>
               <div id="map"></div>
               <div class="map-legend">
-                <span class="legend-chip"><span class="legend-dot" style="background:#ef4444"></span> Sessão atual</span>
-                <span class="legend-chip"><span class="legend-dot" style="background:#2563eb"></span> Histórico salvo</span>
-                <span class="legend-chip"><span class="legend-dot" style="background:#16a34a"></span> Atualização ao vivo</span>
+                <span class="legend-chip"><span class="legend-dot" style="background:#ef4444"></span> Current session</span>
+                <span class="legend-chip"><span class="legend-dot" style="background:#2563eb"></span> Saved history</span>
+                <span class="legend-chip"><span class="legend-dot" style="background:#16a34a"></span> Live updates</span>
               </div>
             </div>
           </div>
@@ -448,31 +448,31 @@
           <div class="card">
             <div class="card-head">
               <div>
-                <h3>Resumo rápido</h3>
-                <div class="desc">Dados da sessão atual e status do usuário.</div>
+                <h3>Quick summary</h3>
+                <div class="desc">Current session data and user status.</div>
               </div>
             </div>
             <div class="card-body">
               <div class="stats-row">
                 <div class="mini">
-                  <div class="label">Tempo</div>
+                  <div class="label">Time</div>
                   <div class="value" id="stat-time">0:00</div>
-                  <div class="small">sessão aberta</div>
+                  <div class="small">open session</div>
                 </div>
                 <div class="mini">
-                  <div class="label">Distância</div>
+                  <div class="label">Distance</div>
                   <div class="value" id="stat-dist">0m</div>
-                  <div class="small">trajeto atual</div>
+                  <div class="small">current route</div>
                 </div>
                 <div class="mini">
-                  <div class="label">Pontos</div>
+                  <div class="label">Points</div>
                   <div class="value" id="stat-pts">0</div>
-                  <div class="small">coordenadas</div>
+                  <div class="small">coordinates</div>
                 </div>
                 <div class="mini">
                   <div class="label">Status</div>
                   <div class="value" id="stat-status">—</div>
-                  <div class="small">GPS / clique</div>
+                  <div class="small">GPS / click</div>
                 </div>
               </div>
 
@@ -481,13 +481,13 @@
               <div class="card" style="box-shadow:none">
                 <div class="card-head" style="padding:14px 0;border:none">
                   <div>
-                    <h3 style="font-size:15px">Sessões recentes</h3>
-                    <div class="desc">Histórico resumido da conta logada.</div>
+                    <h3 style="font-size:15px">Recent sessions</h3>
+                    <div class="desc">Summary history for the signed-in account.</div>
                   </div>
                 </div>
                 <div class="card-body" style="padding:0">
                   <div class="list" id="recent-list">
-                    <div class="empty">Nenhuma sessão carregada ainda.</div>
+                    <div class="empty">No sessions loaded yet.</div>
                   </div>
                 </div>
               </div>
@@ -496,14 +496,14 @@
         </div>
       </section>
 
-      <!-- Histórico -->
+      <!-- History -->
       <section id="tab-historico" class="tab-panel">
         <div class="section-grid">
           <div class="card">
             <div class="card-head">
               <div>
-                <h3>Gráfico de evolução diária</h3>
-                <div class="desc">Soma da distância por dia nas sessões do usuário.</div>
+                <h3>Daily progress chart</h3>
+                <div class="desc">Total distance per day across the user's sessions.</div>
               </div>
             </div>
             <div class="card-body">
@@ -514,13 +514,13 @@
           <div class="card">
             <div class="card-head">
               <div>
-                <h3>Meu Histórico</h3>
-                <div class="desc">Sessões salvas, distância, duração e calorias.</div>
+                <h3>My History</h3>
+                <div class="desc">Saved sessions, distance, duration and calories.</div>
               </div>
             </div>
             <div class="card-body">
               <div class="list" id="history-list">
-                <div class="empty">Carregando histórico…</div>
+                <div class="empty">Loading history…</div>
               </div>
             </div>
           </div>
@@ -533,14 +533,14 @@
           <div class="card">
             <div class="card-head">
               <div>
-                <h3>Ranking diário</h3>
-                <div class="desc">Top 3 com medalhas e o resto em sequência.</div>
+                <h3>Daily ranking</h3>
+                <div class="desc">Top 3 with medals, everyone else in order.</div>
               </div>
-              <span class="pill" id="ranking-date">Hoje</span>
+              <span class="pill" id="ranking-date">Today</span>
             </div>
             <div class="card-body">
               <div class="list" id="ranking-list">
-                <div class="empty">Carregando ranking…</div>
+                <div class="empty">Loading ranking…</div>
               </div>
             </div>
           </div>
@@ -548,26 +548,26 @@
           <div class="card">
             <div class="card-head">
               <div>
-                <h3>Resumo do ranking</h3>
-                <div class="desc">Quem lidera agora e quanto falta para alcançar.</div>
+                <h3>Ranking summary</h3>
+                <div class="desc">Who leads right now and how far ahead they are.</div>
               </div>
             </div>
             <div class="card-body">
               <div class="stats-row" style="grid-template-columns:repeat(2,minmax(0,1fr))">
                 <div class="mini">
-                  <div class="label">Líder</div>
+                  <div class="label">Leader</div>
                   <div class="value" id="lead-name" style="font-size:18px">—</div>
-                  <div class="small" id="lead-meta">sem dados</div>
+                  <div class="small" id="lead-meta">no data</div>
                 </div>
                 <div class="mini">
                   <div class="label">Top 3</div>
                   <div class="value" id="top3-count" style="font-size:22px">0</div>
-                  <div class="small">posições premiadas</div>
+                  <div class="small">podium positions</div>
                 </div>
               </div>
               <div style="height:14px"></div>
               <div class="empty">
-                As medalhas 🥇🥈🥉 aparecem automaticamente nos três primeiros lugares.
+                Medals 🥇🥈🥉 appear automatically for the top three.
               </div>
             </div>
           </div>
@@ -580,14 +580,14 @@
           <div class="card">
             <div class="card-head">
               <div>
-                <h3>Ao Vivo</h3>
-                <div class="desc">Atualizações recebidas via Socket.IO.</div>
+                <h3>Live</h3>
+                <div class="desc">Updates received via Socket.IO.</div>
               </div>
               <span class="pill" id="live-count">0 online</span>
             </div>
             <div class="card-body">
               <div class="list" id="live-list">
-                <div class="empty">Aguardando atividade ao vivo…</div>
+                <div class="empty">Waiting for live activity…</div>
               </div>
             </div>
           </div>
@@ -595,13 +595,13 @@
           <div class="card">
             <div class="card-head">
               <div>
-                <h3>Eventos recentes</h3>
-                <div class="desc">Sessões iniciadas, paradas e últimas posições recebidas.</div>
+                <h3>Recent events</h3>
+                <div class="desc">Sessions started/stopped and latest received positions.</div>
               </div>
             </div>
             <div class="card-body">
               <div class="list" id="event-list">
-                <div class="empty">Nenhum evento ainda.</div>
+                <div class="empty">No events yet.</div>
               </div>
             </div>
           </div>
@@ -753,19 +753,19 @@
 
     function updateSessionStats(){
       const elapsed = startTime ? Math.floor((Date.now() - startTime)/1000) : 0;
-      const status = simMode ? 'simulação' : 'GPS';
+      const status = simMode ? 'simulation' : 'GPS';
       statTime.textContent = fmtTime(elapsed);
       statDist.textContent = fmtDist(distM);
       statPts.textContent = String(pts.length);
       statStatus.textContent = status;
-      sessionPill.textContent = sessionId ? `Sessão: #${sessionId}` : 'Sessão: nenhuma';
+      sessionPill.textContent = sessionId ? `Session: #${sessionId}` : 'Session: none';
       statsPill.textContent = `⏱ ${fmtTime(elapsed)} · 📍 ${fmtDist(distM)} · ${pts.length} pts`;
     }
 
     function movementStatus(speedKmh){
-      if (speedKmh > 2.0) return 'andando';
-      if (speedKmh > 0.5) return 'devagar';
-      return 'parado';
+      if (speedKmh > 2.0) return 'moving';
+      if (speedKmh > 0.5) return 'slow';
+      return 'idle';
     }
 
     function addPoint(lat, lon){
@@ -781,7 +781,7 @@
         marker = L.circleMarker([lat, lon], {
           radius: 9, color: '#fff', weight: 2,
           fillColor: '#ef4444', fillOpacity: 1
-        }).addTo(map).bindPopup('Posição atual');
+        }).addTo(map).bindPopup('Current position');
         map.setView([lat, lon], 17);
       } else {
         marker.setLatLng([lat, lon]);
@@ -808,7 +808,7 @@
       let data = null;
       try { data = await res.json(); } catch {}
       if (!res.ok) {
-        const msg = data && (data.error || data.message) ? (data.error || data.message) : `Erro ${res.status}`;
+        const msg = data && (data.error || data.message) ? (data.error || data.message) : `Error ${res.status}`;
         throw new Error(msg);
       }
       return data;
@@ -825,10 +825,10 @@
     async function login(register=false){
       const nickname = nicknameInput.value.trim().toLowerCase();
       const name = nameInput.value.trim();
-      if (!nickname) return showMsg('Digite um apelido.');
-      if (register && !name) return showMsg('Digite o nome para criar a conta.');
+      if (!nickname) return showMsg('Enter a nickname.');
+      if (register && !name) return showMsg('Enter a name to create the account.');
 
-      showMsg(register ? 'Criando conta…' : 'Entrando…');
+      showMsg(register ? 'Creating account…' : 'Signing in…');
       const path = register ? '/auth/register' : '/auth/login';
       const body = register ? { nickname, name } : { nickname };
       try {
@@ -841,7 +841,7 @@
         authScreen.classList.add('hidden');
         document.getElementById('app').classList.remove('hidden');
         initAfterLogin();
-        showMsg('Login realizado.', true);
+        showMsg('Signed in.', true);
       } catch (err) {
         showMsg(err.message);
       }
@@ -859,7 +859,7 @@
       timerHandle = null;
       document.getElementById('app').classList.add('hidden');
       authScreen.classList.remove('hidden');
-      showMsg('Desconectado.');
+      showMsg('Signed out.');
     }
 
     async function startSession(){
@@ -874,20 +874,20 @@
       btnStart.classList.add('hidden');
       btnStop.classList.remove('hidden');
       if (simMode) {
-        setMode('clique no mapa', '#d97706');
+        setMode('click on the map', '#d97706');
       } else {
-        setMode('GPS ativo', '#16a34a');
+        setMode('GPS active', '#16a34a');
       }
       updateSessionStats();
       timerHandle = setInterval(updateSessionStats, 1000);
-      pushEvent(`Sessão iniciada #${sessionId}`, `${currentUser.nickname} começou uma nova sessão.`);
+      pushEvent(`Session started #${sessionId}`, `${currentUser.nickname} started a new session.`);
       if (navigator.geolocation && !simMode) {
         watchId = navigator.geolocation.watchPosition(
           pos => addPoint(pos.coords.latitude, pos.coords.longitude),
           () => {
             simMode = true;
-            setMode('GPS falhou → clique no mapa', '#d97706');
-            pushEvent('Fallback de GPS', 'O navegador não entregou posição. Clique no mapa para continuar.');
+            setMode('GPS failed → click on the map', '#d97706');
+            pushEvent('GPS fallback', 'The browser did not provide a position. Click on the map to continue.');
           },
           { enableHighAccuracy:true, maximumAge:0, timeout:15000 }
         );
@@ -905,12 +905,12 @@
       timerHandle = null;
       const sid = sessionId;
       await api('/session/stop/' + sid, { method: 'POST' });
-      pushEvent(`Sessão encerrada #${sid}`, `Distância final: ${fmtDist(distM)}.`);
+      pushEvent(`Session ended #${sid}`, `Final distance: ${fmtDist(distM)}.`);
       sessionId = null;
       btnStop.classList.add('hidden');
       btnStart.classList.remove('hidden');
-      setMode(simMode ? 'modo simulação' : 'modo GPS', '#64748b');
-      sessionPill.textContent = 'Sessão: nenhuma';
+      setMode(simMode ? 'simulation mode' : 'GPS mode', '#64748b');
+      sessionPill.textContent = 'Session: none';
       updateSessionStats();
       await refreshAll();
     }
@@ -925,15 +925,15 @@
 
     function renderUserSessions(sessions){
       if (!sessions.length) {
-        historyList.innerHTML = '<div class="empty">Nenhuma sessão encontrada para este usuário.</div>';
+        historyList.innerHTML = '<div class="empty">No sessions found for this user.</div>';
         return;
       }
       historyList.innerHTML = sessions.map((s, idx) => `
         <div class="item">
           <div>
-            <strong>Sessão #${s.id}</strong>
+            <strong>Session #${s.id}</strong>
             <div class="meta">
-              ${s.started_at.slice(0,16).replace('T',' ')} ${s.ended_at ? '• encerrada' : '• ativa'}<br>
+              ${s.started_at.slice(0,16).replace('T',' ')} ${s.ended_at ? '• ended' : '• active'}<br>
               ${fmtDist(s.distance_m)} · ${s.point_count} pts · ${s.elapsed_s ? fmtTime(s.elapsed_s) : '0:00'} · ${s.calories || 0} kcal
             </div>
           </div>
@@ -946,16 +946,16 @@
 
     function renderRecentList(sessions){
       if (!sessions.length) {
-        recentList.innerHTML = '<div class="empty">Sem histórico ainda.</div>';
+        recentList.innerHTML = '<div class="empty">No history yet.</div>';
         return;
       }
       recentList.innerHTML = sessions.slice(0,4).map((s, idx) => `
         <div class="item">
           <div>
-            <strong>Sessão #${s.id}</strong>
+            <strong>Session #${s.id}</strong>
             <div class="meta">${s.started_at.slice(0,16).replace('T',' ')} · ${fmtDist(s.distance_m)} · ${s.point_count} pts</div>
           </div>
-          <div class="right">${s.ended_at ? 'finalizada' : 'ativa'}</div>
+          <div class="right">${s.ended_at ? 'ended' : 'active'}</div>
         </div>
       `).join('');
     }
@@ -977,7 +977,7 @@
         data: {
           labels,
           datasets: [{
-            label: 'Distância (km)',
+            label: 'Distance (km)',
             data: values,
             tension: 0.35,
             fill: true
@@ -998,18 +998,18 @@
 
     async function loadRanking(){
       const ranking = await api('/ranking/daily');
-      rankingDate.textContent = new Date().toLocaleDateString('pt-BR');
+      rankingDate.textContent = new Date().toLocaleDateString();
       top3Count.textContent = String(Math.min(3, ranking.length));
 
       if (!ranking.length) {
-        rankingList.innerHTML = '<div class="empty">Ninguém apareceu no ranking de hoje.</div>';
+        rankingList.innerHTML = '<div class="empty">No one is on today\'s ranking yet.</div>';
         leadName.textContent = '—';
-        leadMeta.textContent = 'sem dados';
+        leadMeta.textContent = 'no data';
         return;
       }
 
       leadName.textContent = `${ranking[0].name}`;
-      leadMeta.textContent = `@${ranking[0].nickname} · ${fmtDist(ranking[0].distance_m)} · ${ranking[0].session_count} sessão(ões)`;
+      leadMeta.textContent = `@${ranking[0].nickname} · ${fmtDist(ranking[0].distance_m)} · ${ranking[0].session_count} session(s)`;
 
       rankingList.innerHTML = ranking.map((r, idx) => {
         const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : '';
@@ -1020,7 +1020,7 @@
               <div class="medal">${medal || `<span class="rank-num">${r.position}</span>`}</div>
               <div>
                 <strong>${r.name} <span style="color:#64748b;font-weight:600">@${r.nickname}</span></strong>
-                <div class="meta">${fmtDist(r.total_distance_m || 0)} · ${r.elapsed_formatted || '0:00'} · ${r.session_count || 0} sessão(ões)</div>
+                <div class="meta">${fmtDist(r.total_distance_m || 0)} · ${r.elapsed_formatted || '0:00'} · ${r.session_count || 0} session(s)</div>
               </div>
               <div class="right">
                 <div class="status-ok">${idx < 3 ? 'top 3' : `#${r.position}`}</div>
@@ -1036,7 +1036,7 @@
       const live = await api('/ranking/live');
       liveCount.textContent = `${live.length} online`;
       if (!live.length) {
-        liveList.innerHTML = '<div class="empty">Nenhum usuário online no momento.</div>';
+        liveList.innerHTML = '<div class="empty">No users online right now.</div>';
         return;
       }
 
@@ -1049,9 +1049,9 @@
               <div>
                 <strong>${u.name} <span style="color:#64748b;font-weight:600">@${u.nickname}</span></strong>
                 <div class="meta">
-                  Status: <span class="${u.status === 'andando' ? 'status-ok' : (u.status === 'devagar' ? 'status-off' : 'status-stop')}">${u.status || '—'}</span>
-                  · Velocidade: ${speed} km/h<br>
-                  Última vista há ${u.last_seen_s || 0}s
+                  Status: <span class="${u.status === 'moving' ? 'status-ok' : (u.status === 'slow' ? 'status-off' : 'status-stop')}">${u.status || '—'}</span>
+                  · Speed: ${speed} km/h<br>
+                  Last seen ${u.last_seen_s || 0}s ago
                   ${u.distance_m ? ` · ${fmtDist(u.distance_m)}` : ''}
                 </div>
               </div>
@@ -1077,7 +1077,7 @@
               color: COLORS[idx % COLORS.length],
               weight: 4,
               opacity: 0.65
-            }).addTo(map).bindPopup(`<b>Sessão #${s.id}</b><br>${fmtDist(s.distance_m)} · ${s.point_count} pts`);
+            }).addTo(map).bindPopup(`<b>Session #${s.id}</b><br>${fmtDist(s.distance_m)} · ${s.point_count} pts`);
           })
           .catch(() => {});
       });
@@ -1096,25 +1096,25 @@
       if (socket) return;
       socket = io();
 
-      socket.on('connect', () => pushEvent('Socket conectado', 'Atualização ao vivo ativada.'));
-      socket.on('disconnect', () => pushEvent('Socket desconectado', 'Sem atualização em tempo real por enquanto.'));
+      socket.on('connect', () => pushEvent('Socket connected', 'Live updates enabled.'));
+      socket.on('disconnect', () => pushEvent('Socket disconnected', 'No real-time updates for now.'));
 
       socket.on('session_start', payload => {
         if (!payload) return;
-        pushEvent('Sessão iniciada ao vivo', `user_id=${payload.user_id || '—'} · session_id=${payload.session_id || '—'}`);
+        pushEvent('Live: session started', `user_id=${payload.user_id || '—'} · session_id=${payload.session_id || '—'}`);
         loadLive().catch(() => {});
       });
 
       socket.on('session_stop', payload => {
         if (!payload) return;
-        pushEvent('Sessão encerrada ao vivo', `session_id=${payload.session_id || '—'}`);
+        pushEvent('Live: session ended', `session_id=${payload.session_id || '—'}`);
         refreshAll().catch(() => {});
       });
 
       socket.on('location_update', payload => {
         if (!payload) return;
-        const name = payload.name || 'Anônimo';
-        pushEvent('Localização recebida', `${name} · ${fmtDist(payload.distance_m || 0)} · ${payload.status || '—'}`);
+        const name = payload.name || 'Anonymous';
+        pushEvent('Location received', `${name} · ${fmtDist(payload.distance_m || 0)} · ${payload.status || '—'}`);
 
         if (currentUser && payload.user_id === currentUser.user_id) {
           loadHistoryAndChart().catch(() => {});
@@ -1130,9 +1130,9 @@
       updateSessionStats();
       if (!navigator.geolocation) {
         simMode = true;
-        setMode('modo simulação', '#d97706');
+        setMode('simulation mode', '#d97706');
       } else {
-        setMode('pronto', '#64748b');
+        setMode('ready', '#64748b');
       }
       loadHistoricalTracks().catch(()=>{});
       refreshAll().catch(()=>{});
@@ -1152,11 +1152,11 @@
 
     btnStart.addEventListener('click', async () => {
       try { await startSession(); }
-      catch (err) { showMsg(err.message || 'Falha ao iniciar sessão.'); }
+      catch (err) { showMsg(err.message || 'Failed to start session.'); }
     });
     btnStop.addEventListener('click', async () => {
       try { await stopSession(); }
-      catch (err) { showMsg(err.message || 'Falha ao encerrar sessão.'); }
+      catch (err) { showMsg(err.message || 'Failed to stop session.'); }
     });
 
     nicknameInput.addEventListener('keydown', e => {
@@ -1178,7 +1178,7 @@
       }
       if (!navigator.geolocation) {
         simMode = true;
-        setMode('modo simulação', '#d97706');
+        setMode('simulation mode', '#d97706');
       }
     })();
 

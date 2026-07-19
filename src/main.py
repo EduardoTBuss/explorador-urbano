@@ -17,10 +17,10 @@ app.config["SECRET_KEY"] = "explorador-urbano-2025"
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
 
 
-# ── SSL autoassinado ──────────────────────────────────────────────────────────
+# ── self-signed SSL ──────────────────────────────────────────────────────────
 
 def get_local_ip():
-    """Descobre o IP local da máquina na rede."""
+    """Discover the machine's local IP on the network."""
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.connect(("8.8.8.8", 80))
@@ -32,9 +32,9 @@ def get_local_ip():
 
 
 def generate_self_signed_cert(certfile=CERT_FILE, keyfile=KEY_FILE):
-    """Gera certificado autoassinado se ainda não existir."""
+    """Generate a self-signed certificate if one does not exist yet."""
     if os.path.exists(certfile) and os.path.exists(keyfile):
-        print("[SSL] Usando certificado existente.")
+        print("[SSL] Using existing certificate.")
         return
 
     try:
@@ -45,7 +45,7 @@ def generate_self_signed_cert(certfile=CERT_FILE, keyfile=KEY_FILE):
         import ipaddress
         import datetime as dt
 
-        print("[SSL] Gerando certificado autoassinado…")
+        print("[SSL] Generating self-signed certificate…")
         local_ip = get_local_ip()
 
         key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
@@ -85,10 +85,10 @@ def generate_self_signed_cert(certfile=CERT_FILE, keyfile=KEY_FILE):
                 serialization.NoEncryption(),
             ))
 
-        print(f"[SSL] Certificado criado para IP {local_ip}.")
+        print(f"[SSL] Certificate created for IP {local_ip}.")
 
     except ImportError:
-        # fallback: usa openssl via subprocess
+        # fallback: use openssl via subprocess
         import subprocess
         local_ip = get_local_ip()
         san = f"subjectAltName=IP:{local_ip},IP:127.0.0.1,DNS:localhost"
@@ -99,10 +99,10 @@ def generate_self_signed_cert(certfile=CERT_FILE, keyfile=KEY_FILE):
             "-subj", f"/CN={local_ip}",
             "-addext", san,
         ], check=True, capture_output=True)
-        print(f"[SSL] Certificado criado via openssl para IP {local_ip}.")
+        print(f"[SSL] Certificate created via openssl for IP {local_ip}.")
 
 
-# ── banco de dados ─────────────────────────────────────────────────────────────
+# ── database ─────────────────────────────────────────────────────────────
 
 def get_db():
     con = sqlite3.connect(DB, check_same_thread=False)
@@ -144,7 +144,7 @@ def init_db():
                 last_lat   REAL,
                 last_lon   REAL,
                 last_seen  TEXT,
-                status     TEXT DEFAULT 'parado',
+                status     TEXT DEFAULT 'idle',
                 FOREIGN KEY (user_id) REFERENCES users(id)
             );
         """)
@@ -221,10 +221,10 @@ def calc_current_speed(con, session_id, window=6):
 
 def movement_status(speed_kmh):
     if speed_kmh > 2.0:
-        return "andando"
+        return "moving"
     if speed_kmh > 0.5:
-        return "devagar"
-    return "parado"
+        return "slow"
+    return "idle"
 
 
 # ── auth ──────────────────────────────────────────────────────────────────────
@@ -235,10 +235,10 @@ def register():
     name     = data.get("name", "").strip()
     nickname = data.get("nickname", "").strip().lower()
     if not name or not nickname:
-        return jsonify(error="Nome e apelido são obrigatórios"), 400
+        return jsonify(error="Name and nickname are required"), 400
     with get_db() as con:
         if con.execute("SELECT 1 FROM users WHERE nickname=?", (nickname,)).fetchone():
-            return jsonify(error="Apelido já em uso"), 409
+            return jsonify(error="Nickname already taken"), 409
         cur = con.execute(
             "INSERT INTO users (name, nickname, created_at) VALUES (?,?,?)",
             (name, nickname, datetime.now().isoformat()),
@@ -255,7 +255,7 @@ def login():
             "SELECT id, name, nickname FROM users WHERE nickname=?", (nickname,)
         ).fetchone()
         if not user:
-            return jsonify(error="Usuário não encontrado"), 404
+            return jsonify(error="User not found"), 404
     return jsonify(user_id=user["id"], name=user["name"], nickname=user["nickname"])
 
 
@@ -266,7 +266,7 @@ def list_users():
     return jsonify([dict(r) for r in rows])
 
 
-# ── sessões ───────────────────────────────────────────────────────────────────
+# ── sessions ───────────────────────────────────────────────────────────────────
 
 @app.get("/")
 def root():
@@ -292,7 +292,7 @@ def start_session():
                        session_id=excluded.session_id,
                        last_seen=excluded.last_seen,
                        status=excluded.status""",
-                (user_id, session_id, ts, "parado"),
+                (user_id, session_id, ts, "idle"),
             )
     socketio.emit("session_start", {"user_id": user_id, "session_id": session_id})
     return jsonify(session_id=session_id)
@@ -360,7 +360,7 @@ def receive_location():
             socketio.emit("location_update", {
                 "user_id":           sess["user_id"],
                 "nickname":          user["nickname"] if user else "anon",
-                "name":              user["name"] if user else "Anônimo",
+                "name":              user["name"] if user else "Anonymous",
                 "lat":               lat,
                 "lon":               lon,
                 "status":            status,
@@ -521,18 +521,18 @@ def on_disconnect():
 # ── start ──────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    PORT = 8443  # porta HTTPS padrão alternativa
+    PORT = 8443  # alternate standard HTTPS port
     generate_self_signed_cert()
 
     local_ip = get_local_ip()
     print("=" * 52)
     print("  Explorador Urbano — HTTPS")
     print("=" * 52)
-    print(f"  Notebook : https://localhost:{PORT}")
-    print(f"  Celular  : https://{local_ip}:{PORT}")
+    print(f"  Laptop : https://localhost:{PORT}")
+    print(f"  Phone  : https://{local_ip}:{PORT}")
     print()
-    print("  ⚠  No celular, aceite o aviso de 'conexão")
-    print("     não confiável' para liberar o GPS.")
+    print("  ⚠  On your phone, accept the 'untrusted")
+    print("     connection' warning to enable GPS.")
     print("=" * 52)
 
     ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
